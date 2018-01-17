@@ -1,0 +1,61 @@
+#!/bin/bash
+#Objetivo: Mejorar la eficacia en el trabajo con Glacier desde bash
+
+#update subir ficheros
+#Crear un job
+#listar vaults
+
+# account-id // Extraerlo de un Doc
+id=448878533127
+
+ayuda() {
+
+        echo -e "OPCIONES\n"
+        echo -e "-l,--list-vaults               Mostrar un listado de vaults Glacier"
+        echo -e "-u,--update                    Subir un fichero a GLACIER"
+        echo -e "-h,--help                      Mostrar ayuda\n "
+}
+
+list-vaults() {
+        aws glacier list-vaults --account-id $id
+                if [ $? -ne 0 ]; then
+                        echo -e "Error al listar"
+                        echo -e "Reintentado subida Ctrl +C  Para Salir"
+                        list-vaults
+                fi
+}
+
+list-jobs() {
+                aws glacier list-jobs --account-id $id --vault-name $vault_job
+}
+
+update() {
+        aws glacier upload-archive --vault-name tests --account-id $id --body $file
+                if [ $? -ne 0 ]; then
+                        echo -e "fichero no subido $file"
+                        echo -e "Reintentando subida"
+                        update
+                fi
+}
+
+
+case $1 in
+        --list-jobs|-lj)
+                vault_job=$2
+                list-jobs
+                ;;
+        --list|-lv)
+                list-vaults
+                ;;
+        --update|-u)
+                file=$2
+                update
+                ;;
+        --help|-h)
+                ayuda
+                ;;
+                *)
+                echo -e "\nUso $0 OPCION 1 [OPCION 2 [OPCION 3]]\n"
+                ayuda
+                ;;
+esac
